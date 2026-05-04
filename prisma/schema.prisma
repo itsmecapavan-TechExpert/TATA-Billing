@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  gstin     String?
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model DeviceModel {
+  id                String             @id @default(cuid())
+  name              String             @unique // e.g., Concox 4G, LAF 4G
+  installationRates InstallationRate[]
+  products          Product[]
+}
+
+model CityTier {
+  id                String             @id @default(cuid())
+  name              String             @unique // Tier 1, Tier 2, Tier 3
+  installationRates InstallationRate[]
+}
+
+model InstallationRate {
+  id            String      @id @default(cuid())
+  deviceModelId String
+  deviceModel   DeviceModel @relation(fields: [deviceModelId], references: [id])
+  cityTierId    String
+  cityTier      CityTier    @relation(fields: [cityTierId], references: [id])
+  rate          Float
+  
+  @@unique([deviceModelId, cityTierId])
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  partNo        String?       @unique
+  basePrice     Float
+  hsn           String?
+  deviceModelId String?
+  deviceModel   DeviceModel?  @relation(fields: [deviceModelId], references: [id])
+  items         InvoiceItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  poNo          String?       // To track TATA PO numbers
+  date          DateTime      @default(now())
+  dueDate       DateTime?
+  clientId      String
+  client        Client        @relation(fields: [clientId], references: [id])
+  items         InvoiceItem[]
+  status        String        @default("DRAFT") // DRAFT, SENT, PAID, OVERDUE
+  totalAmount   Float         @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  partNo      String? // Snapshot of part number at time of billing
+  serviceType String? // KYC, SIM_ACTIVATION, WARRANTY_Y1, etc.
+  quantity    Int
+  price       Float
+  total       Float
+}
