@@ -1,10 +1,11 @@
+import * as dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+
 import { PrismaClient } from '@prisma/client';
 import { neonConfig, Pool } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import ws from 'ws';
-import * as dotenv from 'dotenv';
-
-dotenv.config({ path: '.env' });
 
 if (!process.env.DATABASE_URL) {
   console.error("❌ Error: DATABASE_URL is not defined in your .env file!");
@@ -59,7 +60,7 @@ async function main() {
     tierIds[t] = tier.id;
   }
 
-  // 3. Create Installation Rates (from spreadsheet)
+  // 3. Create Installation Rates
   const rates = [
     { modelId: concox.id, tierId: tierIds['Tier 1'], rate: 450 },
     { modelId: concox.id, tierId: tierIds['Tier 2'], rate: 550 },
@@ -106,7 +107,7 @@ async function main() {
     });
   }
 
-  console.log('Seeding completed successfully!');
+  console.log('✅ Seeding completed successfully!');
 }
 
 main()

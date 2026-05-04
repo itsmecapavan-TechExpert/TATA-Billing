@@ -57,7 +57,7 @@ export default async function RootLayout({
                 <input type="text" placeholder="Search invoices, clients..." />
               </div>
               <div className="user-profile">
-                {session.user.role === 'ADMIN' && (
+                {session?.user?.role === 'ADMIN' && (
                   <div className="control-center">
                     <button className="btn btn-outline" style={{ border: '1px solid #e2e8f0', background: 'white' }}>
                       Control Center
@@ -75,11 +75,11 @@ export default async function RootLayout({
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingLeft: '1rem', borderLeft: '1px solid #e2e8f0' }}>
                   <div className="user-avatar" style={{ background: '#005a9c', color: 'white' }}>
-                    {session.user.name?.charAt(0) || 'U'}
+                    {session?.user?.name?.charAt(0) || 'U'}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>{session.user.name || 'User'}</span>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>{session.user.role}</span>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>{session?.user?.name || 'User'}</span>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>{session?.user?.role || 'VIEWER'}</span>
                   </div>
                   
                   <form action={async () => { "use server"; await signOut(); }}>
