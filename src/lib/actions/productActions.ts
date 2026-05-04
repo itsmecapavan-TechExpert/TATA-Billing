@@ -17,12 +17,13 @@ export async function getProducts() {
 export async function createProduct(formData: FormData) {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
-  const price = parseFloat(formData.get("price") as string);
+  const basePrice = parseFloat(formData.get("basePrice") as string || formData.get("price") as string || "0");
   const hsn = formData.get("hsn") as string;
+  const partNo = formData.get("partNo") as string;
 
   try {
     await prisma.product.create({
-      data: { name, description, price, hsn },
+      data: { name, description, basePrice, hsn, partNo },
     });
     revalidatePath("/products");
   } catch (error) {
