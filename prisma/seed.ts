@@ -3,7 +3,20 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding TATA PO items...');
+  console.log('Seeding TATA PO items and Admin...');
+
+  // 0. Create Default Admin
+  await prisma.user.upsert({
+    where: { email: 'itsmecapavan@gmail.com' },
+    update: {},
+    create: {
+      email: 'itsmecapavan@gmail.com',
+      name: 'Pavan Kumar',
+      role: 'ADMIN',
+      isApproved: true,
+      // Password left blank as requested for first login
+    }
+  });
 
   // 1. Create Device Models
   const concox = await prisma.deviceModel.upsert({
