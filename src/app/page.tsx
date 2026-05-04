@@ -25,10 +25,10 @@ export default async function Dashboard() {
     invoices = await getInvoices();
     clients = await getClients();
     
-    stats.revenue = invoices.reduce((sum, inv) => sum + (inv.status === 'PAID' ? inv.totalAmount : 0), 0);
+    stats.revenue = invoices.reduce((sum: number, inv: any) => sum + (inv.status === 'PAID' ? inv.totalAmount : 0), 0);
     stats.activeClients = clients.length;
-    stats.pending = invoices.filter(inv => inv.status === 'PENDING').length;
-    stats.overdue = invoices.filter(inv => inv.status === 'OVERDUE').length;
+    stats.pending = invoices.filter((inv: any) => inv.status === 'PENDING').length;
+    stats.overdue = invoices.filter((inv: any) => inv.status === 'OVERDUE').length;
   } catch (error) {
     console.warn("Database connection not ready. Showing placeholder data.");
     // Fallback to placeholders if database is not set up
