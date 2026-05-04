@@ -2,6 +2,8 @@ import React from 'react';
 import prisma from '@/lib/prisma';
 import { FileText, Cpu, Calendar, ChevronRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HardwareInvoicesPage() {
   const hwInvoices = await prisma.hardwareInvoice.findMany({
     include: {

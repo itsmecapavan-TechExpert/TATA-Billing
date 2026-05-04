@@ -2,6 +2,8 @@ import React from 'react';
 import InvoiceForm from '@/components/invoices/invoice-form';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function NewInvoicePage() {
   let clients = [];
   let devices = [];

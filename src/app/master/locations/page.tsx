@@ -2,6 +2,8 @@ import React from 'react';
 import { getLocations, createLocation, deleteLocation } from '@/lib/actions/locationActions';
 import { MapPin, Plus, Trash2 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LocationsPage() {
   const locations = await getLocations();
 

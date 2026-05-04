@@ -2,6 +2,8 @@ import React from 'react';
 import { getProducts, createProduct, deleteProduct } from '@/lib/actions/productActions';
 import { 
   Package, 
+
+export const dynamic = 'force-dynamic';
   Plus,
   Search,
   MoreVertical,

@@ -2,6 +2,8 @@ import React from 'react';
 import prisma from '@/lib/prisma';
 import { ArrowLeft, Cpu, Car, MapPin, Calendar } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HardwareInvoiceDetailsPage({ params }: { params: { id: string } }) {
   const hwInvoice = await prisma.hardwareInvoice.findUnique({
     where: { id: params.id },
