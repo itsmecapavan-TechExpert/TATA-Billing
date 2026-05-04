@@ -4,11 +4,16 @@ import { PrismaNeon } from '@prisma/adapter-neon';
 import ws from 'ws';
 import * as dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: '.env' });
+
+if (!process.env.DATABASE_URL) {
+  console.error("❌ Error: DATABASE_URL is not defined in your .env file!");
+  process.exit(1);
+}
 
 neonConfig.webSocketConstructor = ws;
 
-const connectionString = `${process.env.DATABASE_URL}`;
+const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaNeon(pool as any);
 const prisma = new PrismaClient({ adapter });
