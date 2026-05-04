@@ -1,5 +1,7 @@
 import React from 'react';
 import { getClients, deleteClient } from '@/lib/actions/clientActions';
+
+export const dynamic = 'force-dynamic';
 import { 
   Users, 
   Plus,
