@@ -1,6 +1,17 @@
 import { PrismaClient } from '@prisma/client';
+import { neonConfig, Pool } from '@neondatabase/serverless';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import ws from 'ws';
+import * as dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+dotenv.config();
+
+neonConfig.webSocketConstructor = ws;
+
+const connectionString = `${process.env.DATABASE_URL}`;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaNeon(pool as any);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('Seeding TATA PO items and Admin...');
@@ -14,72 +25,79 @@ async function main() {
       name: 'Pavan Kumar',
       role: 'ADMIN',
       isApproved: true,
-      // Password left blank as requested for first login
     }
   });
 
   // 1. Create Device Models
   const concox = await prisma.deviceModel.upsert({
-    where: { name: 'CONCOX VL149-4G' },
+    where: { name: 'Concox 4G' },
     update: {},
-    create: { name: 'CONCOX VL149-4G' },
+    create: { name: 'Concox 4G' }
   });
 
   const laf = await prisma.deviceModel.upsert({
     where: { name: 'LAF 4G' },
     update: {},
-    create: { name: 'LAF 4G' },
+    create: { name: 'LAF 4G' }
   });
 
   // 2. Create City Tiers
-  const tier1 = await prisma.cityTier.upsert({ where: { name: 'Tier 1' }, update: {}, create: { name: 'Tier 1' } });
-  const tier2 = await prisma.cityTier.upsert({ where: { name: 'Tier 2' }, update: {}, create: { name: 'Tier 2' } });
-  const tier3 = await prisma.cityTier.upsert({ where: { name: 'Tier 3' }, update: {}, create: { name: 'Tier 3' } });
+  const tiers = ['Tier 1', 'Tier 2', 'Tier 3'];
+  const tierIds: Record<string, string> = {};
 
-  // 3. Create Products / Services from PO
-  const poItems = [
-    { name: 'TLMS-EXP-SIM MAINTENANCE-CHARGES', partNo: '9348012223', basePrice: 24 },
-    { name: 'TLMS-EXP-CUSTOMER KYC-EA', partNo: '9348012224', basePrice: 35 },
-    { name: 'TLMS-EXP-PRE-INSPECTION (Y CONNECTOR)-CHG', partNo: '9348012225', basePrice: 390 },
-    { name: 'TLMS-EXP-DEVICE-SHIPMENT-EA', partNo: '9348012226', basePrice: 1 },
-    { name: 'TLMS-EXP-DEVICE MAINTENANCE-LAF 4G', partNo: '9348012227', basePrice: 325 },
-    { name: 'TLMS-EXP-EXTND-WRNTY-1ST YR', partNo: '9348012228', basePrice: 200 },
-    { name: 'TLMS-EXP-EXTND-WRNTY-2ND YR', partNo: '9348012229', basePrice: 280 },
-    { name: 'TLMS-EXP-GPRS-200MB-SIMACTIVATION', partNo: '9348012222', basePrice: 336 },
+  for (const t of tiers) {
+    const tier = await prisma.cityTier.upsert({
+      where: { name: t },
+      update: {},
+      create: { name: t }
+    });
+    tierIds[t] = tier.id;
+  }
+
+  // 3. Create Installation Rates (from spreadsheet)
+  const rates = [
+    { modelId: concox.id, tierId: tierIds['Tier 1'], rate: 450 },
+    { modelId: concox.id, tierId: tierIds['Tier 2'], rate: 550 },
+    { modelId: concox.id, tierId: tierIds['Tier 3'], rate: 650 },
+    { modelId: laf.id, tierId: tierIds['Tier 1'], rate: 450 },
+    { modelId: laf.id, tierId: tierIds['Tier 2'], rate: 550 },
+    { modelId: laf.id, tierId: tierIds['Tier 3'], rate: 650 },
   ];
 
-  for (const item of poItems) {
-    await prisma.product.upsert({
-      where: { partNo: item.partNo },
-      update: { basePrice: item.basePrice, name: item.name },
-      create: { name: item.name, partNo: item.partNo, basePrice: item.basePrice },
+  for (const r of rates) {
+    await prisma.installationRate.upsert({
+      where: {
+        deviceModelId_cityTierId: {
+          deviceModelId: r.modelId,
+          cityTierId: r.tierId
+        }
+      },
+      update: { rate: r.rate },
+      create: {
+        deviceModelId: r.modelId,
+        cityTierId: r.tierId,
+        rate: r.rate
+      }
     });
   }
 
-  // 4. Create Tiered Installation Rates
-  const installationRates = [
-    // LAF 4G
-    { deviceId: laf.id, tierId: tier1.id, rate: 250, partNo: '9348012260', name: 'TLMS-EXP-INSTL-LAF 4G-TIER 1 CITY' },
-    { deviceId: laf.id, tierId: tier2.id, rate: 350, partNo: '9348012261', name: 'TLMS-EXP-INST-LAF 4G-TIER 2 CITY' },
-    { deviceId: laf.id, tierId: tier3.id, rate: 450, partNo: '9348012262', name: 'TLMS-EXP-INST-LAF 4G-TIER 3 CITY' },
-    // Concox
-    { deviceId: concox.id, tierId: tier1.id, rate: 200, partNo: '9348012263', name: 'TLMS-EXP-INST-CONCOX VL149-4G-TIER1 CITY' },
-    { deviceId: concox.id, tierId: tier2.id, rate: 300, partNo: '9348012264', name: 'TLMS-EXP-INST-CONCOX VL149-4G-TIER2 CITY' },
-    { deviceId: concox.id, tierId: tier3.id, rate: 400, partNo: '9348012265', name: 'TLMS-EXP-INST-CONCOX VL149-4G-TIER3 CITY' },
+  // 4. Create Standard Service Products
+  const products = [
+    { name: 'SIM Maintenance & KYC Fee', price: 150, hsn: '998313', partNo: 'SIM-KYC-001' },
+    { name: 'Fitment Supporting Documentation', price: 100, hsn: '998311', partNo: 'DOC-FIT-001' },
+    { name: 'Warranty Maintenance - Year 1', price: 200, hsn: '998713', partNo: 'WRNTY-Y1' },
   ];
 
-  for (const rate of installationRates) {
-    await prisma.installationRate.upsert({
-      where: { deviceModelId_cityTierId: { deviceModelId: rate.deviceId, cityTierId: rate.tierId } },
-      update: { rate: rate.rate },
-      create: { deviceModelId: rate.deviceId, cityTierId: rate.tierId, rate: rate.rate },
-    });
-
-    // Also add as products for manual selection
+  for (const p of products) {
     await prisma.product.upsert({
-      where: { partNo: rate.partNo },
-      update: { basePrice: rate.rate, name: rate.name },
-      create: { name: rate.name, partNo: rate.partNo, basePrice: rate.rate },
+      where: { partNo: p.partNo },
+      update: { basePrice: p.price },
+      create: {
+        name: p.name,
+        basePrice: p.price,
+        hsn: p.hsn,
+        partNo: p.partNo
+      }
     });
   }
 
