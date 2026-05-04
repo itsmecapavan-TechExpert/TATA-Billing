@@ -291,11 +291,51 @@ tr:hover td {
   flex: 1;
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
-  .main-content {
-    margin-left: 0;
-  }
+/* Control Center Dropdown */
+.control-center {
+  position: relative;
+  margin-right: 1rem;
+}
+
+.control-center:hover .dropdown-menu {
+  display: block;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 220px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  z-index: 100;
+  margin-top: 0.5rem;
+}
+
+.dropdown-header {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #94a3b8;
+  padding: 0.75rem 1rem 0.25rem;
+  letter-spacing: 0.05em;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.4rem;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f1f5f9;
+  color: #005a9c;
 }
